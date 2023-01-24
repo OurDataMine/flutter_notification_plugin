@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Notifications</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Notification Fragment</string>
+    <string name="second_fragment_label">Second Notification Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first notification fragment</string>
+    <string name="hello_second_fragment">Hello second notification fragment. Arg: %1$s</string>
+
+    <string name="Smile5">&#9786;</string>
+    <string name="Smile4">&#128578;</string>
+    <string name="Smile3">&#128528;</string>
+    <string name="Smile2">&#128577;</string>
+    <string name="Smile1">&#128550;</string>
+    <string name="Camera">&#128247;</string>
+
+    <string name="notification">Remember to check in</string>
+</resources>

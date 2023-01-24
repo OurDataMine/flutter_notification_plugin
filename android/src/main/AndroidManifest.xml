@@ -1,0 +1,30 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.ourdatamine.lock_screen_notification">
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <application>
+        <activity
+            android:name=".NotificationActivity"
+            android:exported="true"
+            android:label="Notified"
+            android:theme="@style/Theme.Notifications.NoActionBar"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true">
+        </activity>
+
+        <receiver android:name=".MyBroadcastReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="RECORD_FEELINGS" />
+            </intent-filter>
+        </receiver>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.ourdatamine.fileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+    </application>
+</manifest>
