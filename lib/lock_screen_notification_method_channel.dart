@@ -42,6 +42,11 @@ class MethodChannelLockScreenNotification extends LockScreenNotificationPlatform
     final int? ret = await channel.invokeMethod('createNotification', message);
     return ret;
   }
+
+  Future<void> launchApp() {
+    channel.invokeMethod('launchApp');
+    return Future(() => null);
+  }
 }
 
 

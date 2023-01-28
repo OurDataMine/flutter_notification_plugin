@@ -11,6 +11,10 @@ class LockScreenNotification {
     return LockScreenNotificationPlatform.instance.createNotification(message);
   }
 
+  Future<void> launchApp() {
+    return LockScreenNotificationPlatform.instance.launchApp();
+  }
+
   Future<void> initialize(void Function(MethodCall) callback) async {
     LockScreenNotificationPlatform.instance.initialize(callback);
   }

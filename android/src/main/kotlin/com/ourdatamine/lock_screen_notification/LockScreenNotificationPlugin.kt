@@ -14,6 +14,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
@@ -54,6 +55,11 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
                     result.success(1)
                 }
             }
+            "launchApp" -> {
+                _appContext?.also {
+                    it.startActivity(it.packageManager.getLaunchIntentForPackage(it.packageName))
+                }
+            }
             else -> {
                 Log.w(TAG, "Couldn't find ${call.method}")
                 result.notImplemented()
@@ -67,10 +73,12 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
         _appContext = flutterPluginBinding.applicationContext
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_ID)
         channel.setMethodCallHandler(this)
+        FlutterEngineCache.getInstance().put("notification_engine", flutterPluginBinding.flutterEngine)
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         Log.d(TAG, "Killing Engine: $binding")
+        FlutterEngineCache.getInstance().remove("notification_engine")
         channel.setMethodCallHandler(null)
         _appContext = null
         _engine = null
@@ -92,7 +100,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
         private const val NOTIFICATION_ID = 101
 
         fun startEngine(context: Context, args: List<String> = listOf()) {
-            if (instance?._engine != null) {
+            if (FlutterEngineCache.getInstance().contains("notifcation_engine") || instance?._engine != null) {
                 Log.d(TAG, "Engine is already initialised @ ${instance?._engine}")
                 return
             }
@@ -166,7 +174,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
             createNotificationChannel(context)
             val notificationView =
                 RemoteViews(
-                    "com.ourdatamine.lock_screen_notification_example",
+                    "com.ourdatamine.picture_storage",
                     R.layout.notification_layout
                 )
 

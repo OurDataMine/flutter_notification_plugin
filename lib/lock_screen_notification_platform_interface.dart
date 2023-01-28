@@ -38,4 +38,7 @@ abstract class LockScreenNotificationPlatform extends PlatformInterface {
     throw UnimplementedError('createNotification() has not been implemented.');
   }
 
+  Future<void> launchApp() {
+    throw UnimplementedError('createNotification() has not been implemented.');
+  }
 }
