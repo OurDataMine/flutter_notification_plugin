@@ -1,6 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.ourdatamine.lock_screen_notification">
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    package="com.ourdatamine.lock_screen_notification">
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera.front"
+        android:required="false" />
+
     <application>
         <activity
             android:name=".NotificationActivity"
@@ -9,9 +20,11 @@
             android:theme="@style/Theme.Notifications.NoActionBar"
             android:showWhenLocked="true"
             android:turnScreenOn="true">
-        </activity>
 
-        <receiver android:name=".MyBroadcastReceiver" android:exported="false">
+        </activity>
+        <receiver
+            android:name=".MyBroadcastReceiver"
+            android:exported="false">
             <intent-filter>
                 <action android:name="RECORD_FEELINGS" />
             </intent-filter>
@@ -19,7 +32,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.ourdatamine.fileProvider"
+            android:authorities="${applicationId}.fileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

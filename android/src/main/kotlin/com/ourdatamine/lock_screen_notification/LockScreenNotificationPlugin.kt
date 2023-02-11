@@ -73,7 +73,8 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
         _appContext = flutterPluginBinding.applicationContext
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_ID)
         channel.setMethodCallHandler(this)
-        FlutterEngineCache.getInstance().put("notification_engine", flutterPluginBinding.flutterEngine)
+        FlutterEngineCache.getInstance()
+            .put("notification_engine", flutterPluginBinding.flutterEngine)
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
@@ -95,12 +96,20 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
 
         private val smile_buttons =
             arrayOf(R.id.smile1, R.id.smile2, R.id.smile3, R.id.smile4, R.id.smile5)
-        val smile_emojis = arrayOf(R.string.Smile1, R.string.Smile2, R.string.Smile3, R.string.Smile4, R.string.Smile5)
+        val smile_emojis = arrayOf(
+            R.string.Smile1,
+            R.string.Smile2,
+            R.string.Smile3,
+            R.string.Smile4,
+            R.string.Smile5
+        )
 
         private const val NOTIFICATION_ID = 101
 
         fun startEngine(context: Context, args: List<String> = listOf()) {
-            if (FlutterEngineCache.getInstance().contains("notifcation_engine") || instance?._engine != null) {
+            if (FlutterEngineCache.getInstance()
+                    .contains("notifcation_engine") || instance?._engine != null
+            ) {
                 Log.d(TAG, "Engine is already initialised @ ${instance?._engine}")
                 return
             }

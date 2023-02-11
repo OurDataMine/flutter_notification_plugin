@@ -3,6 +3,7 @@ package com.ourdatamine.lock_screen_notification
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
+import android.hardware.camera2.CameraCharacteristics
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -31,6 +32,14 @@ class NotificationActivity : AppCompatActivity() {
         private const val TAG_FLUTTER_FRAGMENT = "flutter_fragment"
     }
 
+//    @Override
+//    public boolean dispatchKeyEvent(@NonNull KeyEvent event)
+//    {
+//        if (event.getKeyCode() == KeyEvent.KEYCODE_POWER)
+//            finish();
+//        return super.dispatchKeyEvent(event);
+//    }
+
     private fun getIntentToOpenMainActivity(uri: String): Intent? {
         val packageName: String = packageName
         return packageManager
@@ -44,10 +53,10 @@ class NotificationActivity : AppCompatActivity() {
     fun setupGUI() {
         setContentView(R.layout.activity_annotate_picture)
 
-        val imageView : ImageView = findViewById(R.id.imageView)
+        val imageView: ImageView = findViewById(R.id.imageView)
         imageView.setImageResource(R.drawable.ic_launcher_background)
 
-        val button : Button = findViewById(R.id.buttonLoadPicture)
+        val button: Button = findViewById(R.id.buttonLoadPicture)
         button.setOnClickListener {
 //            startActivity(getIntentToOpenMainActivity(camPath))
 //            finish()
@@ -70,7 +79,7 @@ class NotificationActivity : AppCompatActivity() {
                 .setPackage("com.ourdatamine.picture_storage")
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            Log.w(TAG,intent.toString())
+            Log.w(TAG, intent.toString())
             Log.w(TAG, intent.extras.toString())
             //startActivity(intent)
             intent.extras?.let { it1 -> i1?.putExtras(it1) }
@@ -85,13 +94,13 @@ class NotificationActivity : AppCompatActivity() {
 
     }
 
-    fun setupFragment(camPath: String){
+    fun setupFragment(camPath: String) {
         val fragmentManager = supportFragmentManager
         setContentView(R.layout.fragment_holder)
         flutterFragment = fragmentManager
             .findFragmentByTag(TAG_FLUTTER_FRAGMENT) as FlutterFragment?
         if (flutterFragment == null) {
-            var newFlutterFragment  : FlutterFragment = FlutterFragment
+            var newFlutterFragment: FlutterFragment = FlutterFragment
 //                .withCachedEngine("notification_engine")
                 .withNewEngine()
                 .dartEntrypoint("mySpecialEntryPoint")
@@ -111,7 +120,7 @@ class NotificationActivity : AppCompatActivity() {
 
     private var flutterFragment: FlutterFragment? = null
 
-    fun pictureSuccess(camUri : Uri, camPath: String) {
+    fun pictureSuccess(camUri: Uri, camPath: String) {
         // val imageView : ImageView = findViewById(R.id.imageView)
         // imageView.setImageURI(camUri)
         pictureSelected = true
@@ -124,12 +133,13 @@ class NotificationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setShowWhenLocked(true)
         val photoFile: File = File.createTempFile("tmp", null, cacheDir)
         val camUri = FileProvider.getUriForFile(
-            this, "com.ourdatamine.fileProvider",
+            this, "$packageName.fileProvider",
             photoFile
         )
-        val camPath : String = photoFile.absolutePath
+        val camPath: String = photoFile.absolutePath
 
 //        setupFragment()
 
@@ -151,12 +161,21 @@ class NotificationActivity : AppCompatActivity() {
         if (buttonNum == 10 && !pictureSelected) {
             Log.d(TAG, "Picture has been NOT been set, launching camera")
             registerTakePicture.launch(camUri)
-        }
-        else {
+        } else {
             Log.d(TAG, "Camera not working. URI set to $camUri ($camPath)")
             pictureSuccess(camUri, camPath)
         }
     }
+
+    override fun onPause() {
+        Log.d(TAG, "Paused")
+        if (pictureSelected) {
+            Log.d(TAG, "Killing, because we already have the picture.")
+            finish();
+        }
+        super.onPause()
+    }
+
 
     override fun onPostResume() {
         super.onPostResume()
@@ -191,13 +210,25 @@ class NotificationActivity : AppCompatActivity() {
         super.onTrimMemory(level)
         flutterFragment?.onTrimMemory(level)
     }
-    
+
     open class CustomTakePicture : ActivityResultContracts.TakePicture() {
         @CallSuper
         override fun createIntent(context: Context, input: Uri): Intent {
             val action: String = MediaStore.ACTION_IMAGE_CAPTURE_SECURE
-            val intent : Intent = Intent(action)
+            val intent: Intent = Intent(action)
                 .putExtra(MediaStore.EXTRA_OUTPUT, input)
+                .putExtra(
+                    "android.intent.extras.CAMERA_FACING",
+                    android.hardware.camera2.CaptureRequest.LENS_FACING_BACK
+                )
+                .putExtra(
+                    "android.intent.extras.CAMERA_FACING",
+                    CameraCharacteristics.LENS_FACING_BACK
+                )
+                .putExtra("android.intent.extras.LENS_FACING_FRONT", 0)
+                .putExtra("android.intent.extras.USE_FRONT_CAMERA", false)
+                .putExtra("camerafacing", "rear")
+                .putExtra("previous_mode", "rear")
 //            intent.clipData = ClipData.newRawUri("picture_path", input)
             return intent
         }
