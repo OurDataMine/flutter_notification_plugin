@@ -198,7 +198,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
                 )
 
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.leaf)
+                .setSmallIcon(R.drawable.notification_icon)
                 .setContentTitle("Record Health Event")
                 .setContentText(update_text)
                 .setContentInfo("Content Info")
