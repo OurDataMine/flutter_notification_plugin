@@ -1,0 +1,29 @@
+<vector
+    android:width="166dp"
+    android:height="166dp"
+    android:viewportHeight="166"
+    android:viewportWidth="166"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <path
+        android:name="circle"
+        android:pathData="M82.75,82.75m-61.7,-35.62a71.25,71.25 75,1 1,123.41 71.25a71.25,71.25 75,1 1,-123.41 -71.25"
+        android:fillColor="#008037"
+        android:strokeColor="#00008037"
+        android:strokeWidth="3" />
+    <path
+        android:name="leaf"
+        android:pathData="m49.54,137.41c-7.96,-14.48 -15.92,-28.97 -13.48,-42.03 2.43,-13.06 15.26,-24.7 27.53,-31.61 12.27,-6.91 24.14,-9.13 36.5,-11m-50.3,85.04C66.14,137.27 83.04,137.06 93.28,128.47c10.24,-8.59 13.81,-25.56 13.53,-39.71 -0.28,-14.15 -4.45,-25.62 -8.61,-37.02"
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="butt"
+        android:strokeLineJoin="bevel"
+        android:strokeWidth="3.5" />
+    <path
+        android:name="veins"
+        android:pathData="m54.98,128.62 l0.1,-33.32m15.62,6.36c0.01,-6.17 0.01,-12.34 0.02,-18.51m-0.02,18.51c5.17,-3.18 10.34,-6.36 15.52,-9.54M54.97,128.24 L84.51,112.29m-38.42,31.6 l36.83,-63.79"
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="miter"
+        android:strokeWidth="3.5" />
+</vector>
