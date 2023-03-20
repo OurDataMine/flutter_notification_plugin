@@ -22,6 +22,16 @@
             android:turnScreenOn="true">
 
         </activity>
+        <activity
+            android:name=".NotificationFlutterActivity"
+            android:exported="true"
+            android:label="Notified"
+            android:theme="@style/Theme.Notifications.NoActionBar"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true">
+
+        </activity>
+
         <receiver
             android:name=".MyBroadcastReceiver"
             android:exported="false">

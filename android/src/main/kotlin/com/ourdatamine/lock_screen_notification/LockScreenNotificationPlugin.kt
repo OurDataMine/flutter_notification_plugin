@@ -151,7 +151,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
 
         private fun createPI(context: Context): PendingIntent {
             val requestCode = 10 //Camera
-            val intent = Intent(context, NotificationActivity::class.java).apply {
+            val intent = Intent(context, NotificationFlutterActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 putExtra("Source", requestCode)
             }
