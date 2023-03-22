@@ -44,7 +44,8 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
                 _appContext?.also {
                     val argument: String = call.arguments as String
                     createNotification(it, argument)
-                    result.success(1)
+                    val ret = if (areNotificationsEnabled(it)) 1 else -1
+                    result.success(ret)
                 }
             }
             "cancelNotification" -> {
@@ -207,7 +208,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
                 .setSilent(true)
                 .setOngoing(true)
                 .setShowWhen(false)
-                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .setStyle(NotificationCompat.DecoratedCustomViewStyle())
@@ -219,6 +220,10 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
                 notify(NOTIFICATION_ID, builder.build())
             }
             Log.d("Notification", "Create Notification with text: $update_text")
+        }
+
+        fun areNotificationsEnabled(context: Context): Boolean {
+            return NotificationManagerCompat.from(context).areNotificationsEnabled()
         }
 
         private fun createNotificationChannel(context: Context) {
