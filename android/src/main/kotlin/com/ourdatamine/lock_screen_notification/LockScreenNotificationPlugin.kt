@@ -184,7 +184,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
             createNotificationChannel(context)
             val notificationView =
                 RemoteViews(
-                    "com.ourdatamine.picture_storage",
+                    context.packageName,
                     R.layout.notification_layout
                 )
 
