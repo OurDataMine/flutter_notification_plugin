@@ -1,10 +1,8 @@
 package com.ourdatamine.lock_screen_notification
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import androidx.annotation.NonNull
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -33,7 +31,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
     private var _appContext: Context? = null
     private var _engine: FlutterPlugin.FlutterPluginBinding? = null
 
-    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+    override fun onMethodCall(call: MethodCall, result: Result) {
         if (_appContext == null) {
             result.error("No Context", "Context is missing", "")
             return
@@ -68,7 +66,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
         }
     }
 
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         Log.d(TAG, "Attaching to Engine: $flutterPluginBinding")
         _engine = flutterPluginBinding
         _appContext = flutterPluginBinding.applicationContext
@@ -78,7 +76,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
             .put("notification_engine", flutterPluginBinding.flutterEngine)
     }
 
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         Log.d(TAG, "Killing Engine: $binding")
         FlutterEngineCache.getInstance().remove("notification_engine")
         channel.setMethodCallHandler(null)
@@ -107,7 +105,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
 
         private const val NOTIFICATION_ID = 101
 
-        fun startEngine(context: Context, args: List<String> = listOf()) {
+        private fun startEngine(context: Context, args: List<String> = listOf()) {
             if (FlutterEngineCache.getInstance()
                     .contains("notifcation_engine") || instance?._engine != null
             ) {
@@ -128,7 +126,6 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
             Log.d(TAG, "Exec up: $dartExecutor")
 
             val entryPoint = DartExecutor.DartEntrypoint.createDefault()
-//        val entryPoint = DartEntrypoint(loader.findAppBundlePath(),"other_entrypoint")
             dartExecutor.executeDartEntrypoint(entryPoint, args)
         }
 
@@ -138,46 +135,30 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
             Log.d(TAG, "Attempted dart method feelings from Native")
         }
 
-        fun recordPicture(context: Context, uri: String) {
-            startEngine(context, listOf("recordPictureEvent=$uri"))
-            instance?.channel?.invokeMethod("picture_event", uri)
-            Log.d(TAG, "Attempted dart method picture_event from Native")
-        }
-
-        fun editPicture(context: Context, uri: String) {
-            startEngine(context, listOf("editPictureEvent=$uri"))
-            instance?.channel?.invokeMethod("edit_picture", uri)
-            Log.d(TAG, "Attempted dart method edit_picture from Native")
-        }
-
         private fun createPI(context: Context): PendingIntent {
             val requestCode = 10 //Camera
-            val intent = Intent(context, NotificationFlutterActivity::class.java).apply {
+            val intent = Intent(context, Camera::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 putExtra("Source", requestCode)
             }
-            val pendingIntent: PendingIntent = PendingIntent.getActivity(
+            return PendingIntent.getActivity(
                 context, requestCode,
                 intent, PendingIntent.FLAG_IMMUTABLE
             )
-            return pendingIntent
-
         }
 
         private fun createPIBroadcast(context: Context, requestCode: Int): PendingIntent {
 
             val snoozeIntent = Intent(context, MyBroadcastReceiver::class.java).apply {
                 action = "RECORD_FEELINGS"
-                putExtra(Notification.EXTRA_NOTIFICATION_ID, requestCode)
+                //putExtra(Notification.EXTRA_NOTIFICATION_ID, requestCode)
             }
-            val snoozePendingIntent: PendingIntent =
-                PendingIntent.getBroadcast(
+            return PendingIntent.getBroadcast(
                     context,
                     requestCode,
                     snoozeIntent,
                     PendingIntent.FLAG_IMMUTABLE
                 )
-            return snoozePendingIntent
         }
 
         fun createNotification(context: Context, update_text: String = "") {
@@ -231,7 +212,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
             // the NotificationChannel class is new and not in the support library
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val name = "Quick Record"
-                val importance = NotificationManager.IMPORTANCE_MAX
+                val importance = NotificationManager.IMPORTANCE_HIGH
                 val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                     description = "Quickly record a reaction or photo"
                     enableLights(false)

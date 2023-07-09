@@ -5,10 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 
-
-
-private const val TAG = "MyBroadcastReceiver"
-
 class MyBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         StringBuilder().apply {
@@ -22,5 +18,9 @@ class MyBroadcastReceiver : BroadcastReceiver() {
         val requestCode: Int = intent.extras?.getInt("android.intent.extra.NOTIFICATION_ID", -1)!!
         val status = context.getString(LockScreenNotificationPlugin.smile_emojis[requestCode - 1])
         LockScreenNotificationPlugin.recordFeelings(context, requestCode, status)
+    }
+
+    companion object {
+        private const val TAG = "MyBroadcastReceiver"
     }
 }

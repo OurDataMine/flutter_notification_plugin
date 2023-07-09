@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:lock_screen_notification/lock_screen_notification.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:quick_actions/quick_actions.dart';
 import 'package:receive_intent/receive_intent.dart';
 
@@ -24,6 +26,10 @@ Future<void> _initReceiveIntent() async {
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  Permission.notification.request();
+  Permission.camera.request();
+  Permission.locationWhenInUse.request();
 
   await _initReceiveIntent();
   print("Intent Extras2: $intent_extras");

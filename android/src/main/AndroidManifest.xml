@@ -2,8 +2,8 @@
     package="com.ourdatamine.lock_screen_notification">
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -14,24 +14,13 @@
 
     <application>
         <activity
-            android:name=".NotificationActivity"
+            android:name=".Camera"
             android:exported="true"
             android:label="Notified"
             android:theme="@style/Theme.Notifications.NoActionBar"
             android:showWhenLocked="true"
             android:turnScreenOn="true">
-
         </activity>
-        <activity
-            android:name=".NotificationFlutterActivity"
-            android:exported="true"
-            android:label="Notified"
-            android:theme="@style/Theme.Notifications.NoActionBar"
-            android:showWhenLocked="true"
-            android:turnScreenOn="true">
-
-        </activity>
-
         <receiver
             android:name=".MyBroadcastReceiver"
             android:exported="false">
@@ -39,15 +28,5 @@
                 <action android:name="RECORD_FEELINGS" />
             </intent-filter>
         </receiver>
-
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileProvider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths" />
-        </provider>
     </application>
 </manifest>
