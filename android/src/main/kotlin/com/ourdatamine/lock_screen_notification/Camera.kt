@@ -2,10 +2,15 @@ package com.ourdatamine.lock_screen_notification
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -118,9 +123,7 @@ class Camera : AppCompatActivity(), CameraXConfig.Provider {
         )
 
         val metadata = ImageCapture.Metadata()
-        if (location != null) {
-            metadata.location = location
-        }
+        metadata.location = location
 
         // Create output options object which contains file + metadata
         val outputOptions = ImageCapture.OutputFileOptions.
@@ -149,8 +152,28 @@ class Camera : AppCompatActivity(), CameraXConfig.Provider {
                     val msg = "Photo capture succeeded: $savedUri"
 //                    Toast.makeText(baseContext, msg, Toast.LENGTH_LONG).show()
                     Log.d(TAG, msg)
+                    vibrate()
                 }
             })
+    }
+
+    fun vibrate(){
+        val vib = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            @SuppressLint("WrongConstant")
+            val vibratorManager =
+                getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(VIBRATOR_SERVICE) as Vibrator
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vib.vibrate(VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE) )
+        }else{
+            @Suppress("DEPRECATION")
+            vib.vibrate(300)
+        }
     }
 
     override fun getCameraXConfig(): CameraXConfig {
