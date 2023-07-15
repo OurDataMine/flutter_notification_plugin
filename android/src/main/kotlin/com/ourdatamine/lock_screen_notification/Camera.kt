@@ -17,33 +17,33 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.CameraXConfig
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.CameraController
+import androidx.camera.view.LifecycleCameraController
+import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.ourdatamine.lock_screen_notification.databinding.ActivityCameraBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.ourdatamine.lock_screen_notification.databinding.ActivityCameraBinding
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-class Camera : AppCompatActivity(), CameraXConfig.Provider {
+class Camera : AppCompatActivity() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private var imageCapture: ImageCapture? = null
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var binding: ActivityCameraBinding
     private var location : Location? = null
+    private var cameraController: LifecycleCameraController? = null
+
 
     override fun onPause() {
         super.onPause()
@@ -114,7 +114,7 @@ class Camera : AppCompatActivity(), CameraXConfig.Provider {
     private fun takePhoto() {
         // Get a stable reference of the
         // modifiable image capture use case
-        val imageCapture = imageCapture ?: return
+        val cameraController = cameraController ?: return
 
         // Create time-stamped output file to hold the image
         val photoFile = File(
@@ -134,7 +134,7 @@ class Camera : AppCompatActivity(), CameraXConfig.Provider {
         // Set up image capture listener,
         // which is triggered after photo has
         // been taken
-        imageCapture.takePicture(
+        cameraController.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
@@ -176,47 +176,28 @@ class Camera : AppCompatActivity(), CameraXConfig.Provider {
         }
     }
 
-    override fun getCameraXConfig(): CameraXConfig {
-        return CameraXConfig.Builder.fromConfig(Camera2Config.defaultConfig())
-            .setAvailableCamerasLimiter(CameraSelector.DEFAULT_BACK_CAMERA)
-            .build()
-    }
-
     private fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
-        cameraProviderFuture.addListener({
+        cameraController = LifecycleCameraController(this)
+        val cameraController = cameraController ?: return
 
-            // Used to bind the lifecycle of cameras to the lifecycle owner
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+        cameraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+        cameraController.imageCaptureFlashMode = ImageCapture.FLASH_MODE_OFF
+        cameraController.imageCaptureTargetSize = CameraController.OutputSize(
+            android.util.Size(1024,1024))
+        cameraController.isPinchToZoomEnabled = true
 
-            // Preview
-            val preview = Preview.Builder()
-                .build()
-                .also {
-                    it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
-                }
 
-            imageCapture = ImageCapture.Builder()
-                .build()
+        val preview  : PreviewView = binding.viewFinder
+        preview.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+        preview.controller = cameraController
 
-            // Select back camera as a default
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+        try {
+            cameraController.bindToLifecycle(this)
+        } catch (exc: IllegalStateException) {
+            Log.e(TAG, "Use case binding failed", exc)
+        }
 
-            try {
-                // Unbind use cases before rebinding
-                cameraProvider.unbindAll()
-
-                // Bind use cases to camera
-                cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture
-                )
-
-            } catch (exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
-            }
-
-        }, ContextCompat.getMainExecutor(this))
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
