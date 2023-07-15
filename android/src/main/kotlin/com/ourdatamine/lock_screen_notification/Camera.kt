@@ -23,6 +23,7 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -72,12 +73,17 @@ class Camera : AppCompatActivity() {
 
         // set on click listener for the button of capture photo
         // it calls a method which is implemented below
-        findViewById<Button>(R.id.camera_capture_button).setOnClickListener {
+        findViewById<View>(R.id.camera_layout).setOnClickListener {
+            takePhoto()
+        }
+        findViewById<View>(R.id.viewFinder).setOnClickListener {
             takePhoto()
         }
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
+
+
 
     private fun isGranted(perm : String): Boolean {
         return ActivityCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_GRANTED
@@ -92,6 +98,7 @@ class Camera : AppCompatActivity() {
             fusedLocationClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, null)
                 .addOnSuccessListener { location ->
                     if (location != null) {
+                        binding.locationNotReadyButton.visibility = View.GONE
                         binding.locationReadyButton.visibility = View.VISIBLE
                         Log.d(LTAG, "Button appear!")
                     }

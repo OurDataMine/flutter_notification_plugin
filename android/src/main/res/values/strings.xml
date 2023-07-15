@@ -8,4 +8,7 @@
     <string name="Smile2">&#128577;</string>
     <string name="Smile1">&#128550;</string>
     <string name="Camera">&#128247;</string>
+    <string name="location_not_available">Location Not Available</string>
+    <string name="location_available">Location Available</string>
+    <string name="preview">preview</string>
 </resources>
