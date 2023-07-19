@@ -95,11 +95,16 @@ class Camera : AppCompatActivity() {
         Log.e(LTAG, "Checking location permissions")
         if (isGranted(Manifest.permission.ACCESS_FINE_LOCATION) && isGranted(Manifest.permission.ACCESS_COARSE_LOCATION)) {
             Log.e(LTAG, "Location permission granted...")
+
+            // Get location fast, then try to get a new one.
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (this.location == null) {
+                    this.location = location
+                }
+            }
             fusedLocationClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, null)
                 .addOnSuccessListener { location ->
                     if (location != null) {
-                        binding.locationNotReadyButton.visibility = View.GONE
-                        binding.locationReadyButton.visibility = View.VISIBLE
                         Log.d(LTAG, "Button appear!")
                     }
                     val msg = "Location = $location"
