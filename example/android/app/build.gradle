@@ -53,6 +53,11 @@ android {
         versionName flutterVersionName
         multiDexEnabled = true
 
+        testInstrumentationRunner "pl.leancode.patrol.PatrolJUnitRunner"
+    }
+
+    testOptions {
+        execution "ANDROIDX_TEST_ORCHESTRATOR"
     }
 
     buildTypes {
@@ -63,6 +68,10 @@ android {
         }
     }
     namespace 'com.ourdatamine.lock_screen_notification_example'
+}
+
+dependencies {
+    androidTestUtil "androidx.test:orchestrator:1.4.2"
 }
 
 flutter {

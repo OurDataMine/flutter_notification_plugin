@@ -24,12 +24,8 @@ Future<void> _initReceiveIntent() async {
   }
 }
 
-void main(List<String> args) async {
+Future<Widget> buildMainApp(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  Permission.notification.request();
-  Permission.camera.request();
-  Permission.locationWhenInUse.request();
 
   await _initReceiveIntent();
   print("Intent Extras2: $intent_extras");
@@ -41,11 +37,15 @@ void main(List<String> args) async {
     // the engine keeps running, but we aren't listening.
     // return;
   }
-  String initialRoute =  "/";
+  String initialRoute = "/";
   if (intent_extras.containsKey("path_to_photo")) {
     initialRoute = "/photo_edit";
   }
-  runApp(MyApp(initialRoute: initialRoute));
+  return MyApp(initialRoute: initialRoute);
+}
+
+void main(List<String> args) async {
+  runApp(await buildMainApp(args));
 }
 
 class MyApp extends StatelessWidget {
@@ -91,7 +91,8 @@ class EditScreen extends StatelessWidget {
         body: Column(
           children: [
             Text('Current route = ${ModalRoute.of(context)?.settings.name}'),
-            Image(image: Image.file(file).image)
+            Image(image: Image.file(file).image),
+
           ],
         ),
       ),
@@ -173,15 +174,25 @@ class _MyAppScreenState extends State<MyAppScreen> {
             children: [
               Text('Current route = ${ModalRoute.of(context)?.settings.name}'),
               ElevatedButton(onPressed: callFunction,
+                  key: Key("CreateNotification"),
                   child: const Text("Create Notification")),
               ElevatedButton(onPressed: () => _lockScreenNotificationPlugin.cancelNotification(),
                   child: const Text("Cancel Notification")),
               Text('Notification returned $_ret\n'),
               Text('Method: $_method(${_args})'),
               Text('Extras: $intent_extras'),
+              const ElevatedButton(onPressed: setupPermissions,
+                key: Key("Permissions"),
+                child: Text("Permissions")),
             ]
         ),
       ),
     );
   }
+}
+
+void setupPermissions() async {
+  await Permission.notification.request();
+  await Permission.camera.request();
+  await Permission.locationWhenInUse.request();
 }
