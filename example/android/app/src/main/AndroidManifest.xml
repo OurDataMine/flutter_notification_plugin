@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ourdatamine.lock_screen_notification_example">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
    <application
         android:label="lock_screen_notification_example"
         android:name="${applicationName}"
