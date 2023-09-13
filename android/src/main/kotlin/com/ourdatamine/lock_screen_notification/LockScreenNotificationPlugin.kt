@@ -1,5 +1,7 @@
 package com.ourdatamine.lock_screen_notification
 
+import android.annotation.SuppressLint
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -129,7 +131,11 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
             dartExecutor.executeDartEntrypoint(entryPoint, args)
         }
 
-        fun recordFeelings(context: Context, code: Int, emoji: String) {
+        fun recordFeelings(context: Context, code: Int) {
+            val emojiId = smile_emojis.getOrNull(code-1) ?: return
+            val emoji = context.getString(emojiId)
+
+
             startEngine(context, listOf("recordFeelingEvent=$emoji"))
             instance?.channel?.invokeMethod("feelings_event", listOf(code, emoji))
             Log.d(TAG, "Attempted dart method feelings from Native")
@@ -147,17 +153,18 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
             )
         }
 
+        @SuppressLint("WrongConstant")
         private fun createPIBroadcast(context: Context, requestCode: Int): PendingIntent {
 
             val snoozeIntent = Intent(context, MyBroadcastReceiver::class.java).apply {
                 action = "RECORD_FEELINGS"
-                //putExtra(Notification.EXTRA_NOTIFICATION_ID, requestCode)
+                putExtra("Feeling", requestCode)
             }
             return PendingIntent.getBroadcast(
                     context,
                     requestCode,
                     snoozeIntent,
-                    PendingIntent.FLAG_IMMUTABLE
+                    PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                 )
         }
 

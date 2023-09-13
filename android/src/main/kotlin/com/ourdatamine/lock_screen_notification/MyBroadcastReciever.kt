@@ -15,9 +15,12 @@ class MyBroadcastReceiver : BroadcastReceiver() {
             }
         }
 
-        val requestCode: Int = intent.extras?.getInt("android.intent.extra.NOTIFICATION_ID", -1)!!
-        val status = context.getString(LockScreenNotificationPlugin.smile_emojis[requestCode - 1])
-        LockScreenNotificationPlugin.recordFeelings(context, requestCode, status)
+        val requestCode: Int? = intent.extras?.getInt("Feeling", -1)
+        if(requestCode == null) {
+            Log.d(TAG, "Unable to get extra from notification!: ${intent.extras}")
+            return;
+        }
+        LockScreenNotificationPlugin.recordFeelings(context, requestCode)
     }
 
     companion object {
