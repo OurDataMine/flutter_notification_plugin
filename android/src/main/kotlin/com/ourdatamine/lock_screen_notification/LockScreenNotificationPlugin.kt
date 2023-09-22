@@ -141,6 +141,12 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
             Log.d(TAG, "Attempted dart method feelings from Native")
         }
 
+        fun recordPicture(context: Context) {
+            startEngine(context, listOf("pictures"))
+            instance?.channel?.invokeMethod("picture_event", listOf<String>())
+            Log.d(TAG, "Attempted dart method feelings from Native")
+        }
+
         private fun createPI(context: Context): PendingIntent {
             val requestCode = 10 //Camera
             val intent = Intent(context, Camera::class.java).apply {

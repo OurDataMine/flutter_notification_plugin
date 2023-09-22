@@ -29,6 +29,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.ourdatamine.lock_screen_notification.LockScreenNotificationPlugin.Companion.recordPicture
 import com.ourdatamine.lock_screen_notification.databinding.ActivityCameraBinding
 import java.io.File
 import java.text.SimpleDateFormat
@@ -165,6 +166,7 @@ class Camera : AppCompatActivity() {
 //                    Toast.makeText(baseContext, msg, Toast.LENGTH_LONG).show()
                     Log.d(TAG, msg)
                     vibrate()
+                    recordPicture(applicationContext)
                 }
             })
     }
