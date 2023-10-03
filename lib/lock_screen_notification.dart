@@ -11,6 +11,10 @@ class LockScreenNotification {
     return LockScreenNotificationPlatform.instance.createNotification(message);
   }
 
+  Future<void> takePicture() {
+    return LockScreenNotificationPlatform.instance.takePicture();
+  }
+
   Future<void> launchApp() {
     return LockScreenNotificationPlatform.instance.launchApp();
   }

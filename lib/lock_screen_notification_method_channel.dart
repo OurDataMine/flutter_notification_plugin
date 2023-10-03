@@ -43,10 +43,13 @@ class MethodChannelLockScreenNotification extends LockScreenNotificationPlatform
     return ret;
   }
 
+  Future<void> takePicture() {
+    channel.invokeMethod('takePicture');
+    return Future(() => null);
+  }
+
   Future<void> launchApp() {
     channel.invokeMethod('launchApp');
     return Future(() => null);
   }
 }
-
-

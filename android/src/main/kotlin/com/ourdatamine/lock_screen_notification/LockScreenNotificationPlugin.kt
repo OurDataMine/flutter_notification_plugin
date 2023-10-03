@@ -61,6 +61,13 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
                     it.startActivity(it.packageManager.getLaunchIntentForPackage(it.packageName))
                 }
             }
+            "takePicture" -> {
+                _appContext?.also {
+                    val intent1 = Intent(it, Camera::class.java)
+                    intent1.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    it.startActivity(intent1)
+                }
+            }
             else -> {
                 Log.w(TAG, "Couldn't find ${call.method}")
                 result.notImplemented()
