@@ -74,9 +74,9 @@ class Camera : AppCompatActivity() {
 
         // set on click listener for the button of capture photo
         // it calls a method which is implemented below
-        findViewById<View>(R.id.camera_layout).setOnClickListener {
-            takePhoto()
-        }
+//        findViewById<View>(R.id.camera_layout).setOnClickListener {
+//            takePhoto()
+//        }
         findViewById<View>(R.id.viewFinder).setOnClickListener {
             takePhoto()
         }
@@ -200,7 +200,6 @@ class Camera : AppCompatActivity() {
         cameraController.imageCaptureTargetSize = CameraController.OutputSize(
             android.util.Size(1024,1024))
         cameraController.isPinchToZoomEnabled = true
-
 
         val preview  : PreviewView = binding.viewFinder
         preview.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
