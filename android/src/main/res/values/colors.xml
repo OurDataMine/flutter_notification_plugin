@@ -2,4 +2,6 @@
 <resources>
     <color name="leafy_green">#008037</color>
     <color name="background">#D9F1C2</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
 </resources>

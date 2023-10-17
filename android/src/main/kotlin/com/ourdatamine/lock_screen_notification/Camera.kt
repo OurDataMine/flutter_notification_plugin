@@ -12,7 +12,9 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
@@ -26,11 +28,17 @@ import androidx.camera.view.PreviewView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.viewbinding.ViewBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.ourdatamine.lock_screen_notification.LockScreenNotificationPlugin.Companion.recordPicture
 import com.ourdatamine.lock_screen_notification.databinding.ActivityCameraBinding
+import com.ourdatamine.lock_screen_notification.databinding.FixedSizeLayoutBinding
+import org.imaginativeworld.whynotimagecarousel.ImageCarousel
+import org.imaginativeworld.whynotimagecarousel.listener.CarouselListener
+import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
+import org.imaginativeworld.whynotimagecarousel.utils.setImage
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -45,7 +53,7 @@ class Camera : AppCompatActivity() {
     private lateinit var binding: ActivityCameraBinding
     private var location : Location? = null
     private var cameraController: LifecycleCameraController? = null
-
+    private val list = LinkedList<CarouselItem>()
 
     override fun onPause() {
         super.onPause()
@@ -74,14 +82,52 @@ class Camera : AppCompatActivity() {
 
         // set on click listener for the button of capture photo
         // it calls a method which is implemented below
-//        findViewById<View>(R.id.camera_layout).setOnClickListener {
-//            takePhoto()
-//        }
         findViewById<View>(R.id.viewFinder).setOnClickListener {
             takePhoto()
         }
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
+
+
+        val carousel: ImageCarousel = findViewById(R.id.carousel)
+        // Register lifecycle. For activity this will be lifecycle/getLifecycle() and for fragment it will be viewLifecycleOwner/getViewLifecycleOwner().
+        carousel.registerLifecycle(lifecycle)
+        carousel.carouselListener = object : CarouselListener {
+            override fun onCreateViewHolder(
+                layoutInflater: LayoutInflater,
+                parent: ViewGroup
+            ): ViewBinding {
+                return FixedSizeLayoutBinding.inflate(layoutInflater, parent, false)
+            }
+
+            override fun onBindViewHolder(
+                binding: ViewBinding,
+                item: CarouselItem,
+                position: Int
+            ) {
+                val currentBinding = binding as FixedSizeLayoutBinding
+
+                currentBinding.imageView.apply {
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    setImage(item, org.imaginativeworld.whynotimagecarousel.R.drawable.carousel_default_placeholder)
+                }
+            }
+        }
+
+        val delete = findViewById<Button>(R.id.delete_button)
+        delete.setOnClickListener {
+            val item = list[carousel.currentPosition]
+            Log.e(TAG, "TODO: actually delete ${item.imageUrl}")
+            list.remove(item)
+            carousel.setData(list)
+        }
+
+        val edit = findViewById<Button>(R.id.edit_button)
+        edit.setOnClickListener {
+            val item = list[carousel.currentPosition]
+            Log.e(TAG, "TODO: Open app to import and view ${item.imageUrl} RIGHT NOW!")
+        }
+
     }
 
 
@@ -156,17 +202,14 @@ class Camera : AppCompatActivity() {
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    val savedUri = Uri.fromFile(photoFile)
-
-                    // set the saved uri to the image view
-                    findViewById<ImageView>(R.id.iv_capture).visibility = View.VISIBLE
-                    findViewById<ImageView>(R.id.iv_capture).setImageURI(savedUri)
+                    val carousel: ImageCarousel = findViewById(R.id.carousel)
+                    val savedUri = output.savedUri.toString() ?: return
+                    list.addFirst(CarouselItem(imageUrl = savedUri))
+                    carousel.setData(list)
 
                     val msg = "Photo capture succeeded: $savedUri"
-//                    Toast.makeText(baseContext, msg, Toast.LENGTH_LONG).show()
                     Log.d(TAG, msg)
                     vibrate()
-                    recordPicture(applicationContext)
                 }
             })
     }
@@ -263,6 +306,7 @@ class Camera : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        recordPicture(applicationContext)
         super.onDestroy()
         cameraExecutor.shutdown()
     }
