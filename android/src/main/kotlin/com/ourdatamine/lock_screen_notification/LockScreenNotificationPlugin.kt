@@ -1,7 +1,6 @@
 package com.ourdatamine.lock_screen_notification
 
 import android.annotation.SuppressLint
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -149,9 +148,15 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
             Log.d(TAG, "Attempted dart method feelings from Native")
         }
 
-        fun recordPicture(context: Context) {
+        fun recordPictures(context: Context) {
             startEngine(context, listOf("pictures"))
             instance?.channel?.invokeMethod("picture_event", listOf<String>())
+            Log.d(TAG, "Attempted dart method recordPictures from Native")
+        }
+
+        fun editPicture(context: Context, filename: String) {
+            startEngine(context, listOf("edit", filename))
+            instance?.channel?.invokeMethod("edit_picture", listOf(filename))
             Log.d(TAG, "Attempted dart method feelings from Native")
         }
 

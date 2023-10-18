@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
@@ -25,14 +24,15 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toFile
 import androidx.viewbinding.ViewBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import com.ourdatamine.lock_screen_notification.LockScreenNotificationPlugin.Companion.recordPicture
+import com.ourdatamine.lock_screen_notification.LockScreenNotificationPlugin.Companion.editPicture
+import com.ourdatamine.lock_screen_notification.LockScreenNotificationPlugin.Companion.recordPictures
 import com.ourdatamine.lock_screen_notification.databinding.ActivityCameraBinding
 import com.ourdatamine.lock_screen_notification.databinding.FixedSizeLayoutBinding
 import org.imaginativeworld.whynotimagecarousel.ImageCarousel
@@ -116,16 +116,27 @@ class Camera : AppCompatActivity() {
 
         val delete = findViewById<Button>(R.id.delete_button)
         delete.setOnClickListener {
+            if(carousel.currentPosition < 0) {
+                return@setOnClickListener
+            }
             val item = list[carousel.currentPosition]
-            Log.e(TAG, "TODO: actually delete ${item.imageUrl}")
+            val filepath = item.imageUrl ?: return@setOnClickListener
+            File(filepath).delete()
+            Log.d(TAG, "Deteled $filepath")
             list.remove(item)
             carousel.setData(list)
         }
 
         val edit = findViewById<Button>(R.id.edit_button)
         edit.setOnClickListener {
+            if(carousel.currentPosition < 0) {
+                return@setOnClickListener
+            }
             val item = list[carousel.currentPosition]
-            Log.e(TAG, "TODO: Open app to import and view ${item.imageUrl} RIGHT NOW!")
+            val filepath = item.imageUrl ?: return@setOnClickListener
+
+            Log.e(TAG, "TODO: Open app to import and view ${filepath} RIGHT NOW!")
+            editPicture(this, filepath)
         }
 
     }
@@ -203,11 +214,12 @@ class Camera : AppCompatActivity() {
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     val carousel: ImageCarousel = findViewById(R.id.carousel)
-                    val savedUri = output.savedUri.toString() ?: return
-                    list.addFirst(CarouselItem(imageUrl = savedUri))
+                    val savedUri = output.savedUri ?: return
+                    val filepath = savedUri.toFile().absolutePath
+                    list.addFirst(CarouselItem(imageUrl = filepath))
                     carousel.setData(list)
 
-                    val msg = "Photo capture succeeded: $savedUri"
+                    val msg = "Photo capture succeeded: $filepath"
                     Log.d(TAG, msg)
                     vibrate()
                 }
@@ -306,7 +318,7 @@ class Camera : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        recordPicture(applicationContext)
+        recordPictures(applicationContext)
         super.onDestroy()
         cameraExecutor.shutdown()
     }
