@@ -21,7 +21,11 @@ class MethodChannelLockScreenNotification extends LockScreenNotificationPlatform
   late void Function(MethodCall) callback;
 
   Future<void> notificationHandler(MethodCall call) async {
-    callback(call);
+    try {
+      callback(call);
+    } catch (ex) {
+      debugPrint("Callback Failed!: $ex");
+    }
   }
 
   @override
