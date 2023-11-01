@@ -31,6 +31,7 @@ import androidx.viewbinding.ViewBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.google.android.material.snackbar.Snackbar
 import com.ourdatamine.lock_screen_notification.LockScreenNotificationPlugin.Companion.editPicture
 import com.ourdatamine.lock_screen_notification.LockScreenNotificationPlugin.Companion.recordPictures
 import com.ourdatamine.lock_screen_notification.databinding.ActivityCameraBinding
@@ -121,10 +122,16 @@ class Camera : AppCompatActivity() {
             }
             val item = list[carousel.currentPosition]
             val filepath = item.imageUrl ?: return@setOnClickListener
-            File(filepath).delete()
-            Log.d(TAG, "Deteled $filepath")
-            list.remove(item)
-            carousel.setData(list)
+
+            val mySnackbar = Snackbar.make(findViewById(R.id.buttonBar),
+                "This cannot be undone!", Snackbar.LENGTH_SHORT)
+            mySnackbar.setAction("Delete") {
+                File(filepath).delete()
+                Log.d(TAG, "Deteled $filepath")
+                list.remove(item)
+                carousel.setData(list)
+            }
+            mySnackbar.show()
         }
 
         val edit = findViewById<Button>(R.id.edit_button)
