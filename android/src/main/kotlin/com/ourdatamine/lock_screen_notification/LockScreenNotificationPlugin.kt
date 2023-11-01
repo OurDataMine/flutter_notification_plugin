@@ -11,6 +11,7 @@ import android.util.Log
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
@@ -196,13 +197,13 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
 
         fun createNotification(context: Context, update_text: String = "") {
             createNotificationChannel(context)
-            val notificationView =
-                RemoteViews(
-                    context.packageName,
-                    R.layout.notification_layout
-                )
-
-            notificationView.setCharSequence(R.id.notifcationText, "setText", update_text)
+//            val notificationView =
+//                RemoteViews(
+//                    context.packageName,
+//                    R.layout.notification_layout
+//                )
+//
+//            notificationView.setCharSequence(R.id.notifcationText, "setText", update_text)
 
             val cameraIntent = createPI(context)
 
@@ -213,6 +214,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
 //                )
 
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setContentIntent(cameraIntent)
                 .setSmallIcon(R.drawable.notification_icon)
                 .setContentTitle("Record Health Event")
                 .setContentText(update_text)
@@ -222,13 +224,12 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
                 .setSilent(true)
                 .setOngoing(true)
                 .setShowWhen(false)
-                .setColor(ContextCompat.getColor(context, R.color.leafy_green))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
-                .setStyle(NotificationCompat.DecoratedCustomViewStyle())
-                .setContentIntent(cameraIntent)
-//            .setCustomContentView(notificationView)
+                .setColor(ContextCompat.getColor(context, R.color.leafy_green))
+//                .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+//                .setCustomContentView(notificationView)
 //                .setCustomBigContentView(notificationView)
 
             with(NotificationManagerCompat.from(context)) {
