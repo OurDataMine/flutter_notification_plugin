@@ -55,6 +55,7 @@ class Camera : AppCompatActivity() {
     private var location : Location? = null
     private var cameraController: LifecycleCameraController? = null
     private val list = LinkedList<CarouselItem>()
+    private var postProcess = true;
 
     override fun onPause() {
         super.onPause()
@@ -144,6 +145,8 @@ class Camera : AppCompatActivity() {
 
             Log.e(TAG, "TODO: Open app to import and view ${filepath} RIGHT NOW!")
             editPicture(this, filepath)
+            postProcess = false;
+            finishAfterTransition();
         }
 
     }
@@ -325,7 +328,9 @@ class Camera : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        recordPictures(applicationContext)
+        if (postProcess) {
+            recordPictures(applicationContext)
+        }
         super.onDestroy()
         cameraExecutor.shutdown()
     }

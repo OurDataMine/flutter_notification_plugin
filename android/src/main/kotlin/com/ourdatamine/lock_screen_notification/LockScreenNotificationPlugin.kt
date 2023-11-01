@@ -11,7 +11,6 @@ import android.util.Log
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
@@ -29,7 +28,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
-    private lateinit var channel: MethodChannel
+    private lateinit var _channel: MethodChannel
     private var _appContext: Context? = null
     private var _engine: FlutterPlugin.FlutterPluginBinding? = null
 
@@ -79,8 +78,8 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
         Log.d(TAG, "Attaching to Engine: $flutterPluginBinding")
         _engine = flutterPluginBinding
         _appContext = flutterPluginBinding.applicationContext
-        channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_ID)
-        channel.setMethodCallHandler(this)
+        _channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_ID)
+        _channel.setMethodCallHandler(this)
         FlutterEngineCache.getInstance()
             .put("notification_engine", flutterPluginBinding.flutterEngine)
     }
@@ -88,7 +87,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         Log.d(TAG, "Killing Engine: $binding")
         FlutterEngineCache.getInstance().remove("notification_engine")
-        channel.setMethodCallHandler(null)
+        _channel.setMethodCallHandler(null)
         _appContext = null
         _engine = null
     }
@@ -144,20 +143,28 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
 
 
             startEngine(context, listOf("recordFeelingEvent=$emoji"))
-            instance?.channel?.invokeMethod("feelings_event", listOf(code, emoji))
+            instance?._channel?.invokeMethod("feelings_event", listOf(code, emoji))
             Log.d(TAG, "Attempted dart method feelings from Native")
         }
 
         fun recordPictures(context: Context) {
             startEngine(context, listOf("pictures"))
-            instance?.channel?.invokeMethod("picture_event", listOf<String>())
+            instance?._channel?.invokeMethod("picture_event", listOf<String>())
             Log.d(TAG, "Attempted dart method recordPictures from Native")
         }
 
         fun editPicture(context: Context, filename: String) {
-            startEngine(context, listOf("edit", filename))
-            instance?.channel?.invokeMethod("edit_picture", listOf(filename))
-            Log.d(TAG, "Attempted dart method feelings from Native")
+            if (instance?._engine != null) {
+                instance?._channel?.invokeMethod("edit_picture", filename)
+                Log.d(TAG, "Attempted dart method edit_picture to running instance")
+            } else {
+                context.also {
+                    val intent = it.packageManager.getLaunchIntentForPackage(it.packageName)
+                    intent?.putExtra("filename", filename)
+                    it.startActivity(intent)
+                }
+                Log.d(TAG, "Attempted dart method edit_picture via Intent to start dart UI")
+            }
         }
 
         private fun createPI(context: Context): PendingIntent {
