@@ -243,14 +243,14 @@ class Camera : AppCompatActivity() {
                     this.location = location
                 }
         }
-        else if (request) {
-            Log.e(LTAG, "location denied! Requesting...")
-            ActivityCompat.requestPermissions(
-                this,
-                LOCATION_PERMISSIONS,
-                REQUEST_CODE_LOCATION_PERMISSIONS
-            )
-        }
+//        else if (request) {
+//            Log.e(LTAG, "location denied! Requesting...")
+//            ActivityCompat.requestPermissions(
+//                this,
+//                LOCATION_PERMISSIONS,
+//                REQUEST_CODE_LOCATION_PERMISSIONS
+//            )
+//        }
     }
 
     private fun takePhoto() {
