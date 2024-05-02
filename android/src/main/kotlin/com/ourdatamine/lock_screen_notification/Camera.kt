@@ -22,8 +22,12 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
@@ -36,6 +40,11 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.material.snackbar.Snackbar
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.objects.ObjectDetection
+import com.google.mlkit.vision.objects.ObjectDetector
+import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
+import com.google.mlkit.vision.objects.defaults.PredefinedCategory
 import com.ourdatamine.lock_screen_notification.LockScreenNotificationPlugin.Companion.editPicture
 import com.ourdatamine.lock_screen_notification.LockScreenNotificationPlugin.Companion.recordPictures
 import com.ourdatamine.lock_screen_notification.databinding.ActivityCameraBinding
@@ -59,7 +68,7 @@ class Camera : AppCompatActivity() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var outputDirectory: File
-    private lateinit var cameraExecutor: ExecutorService
+    private val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private lateinit var binding: ActivityCameraBinding
     private var location : Location? = null
     private var cameraController: LifecycleCameraController? = null
@@ -86,7 +95,12 @@ class Camera : AppCompatActivity() {
         // Check camera permissions if all permission granted
         // start camera else ask for the permission
         if (allPermissionsGranted()) {
-            startCamera()
+            val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+            cameraProviderFuture.addListener({
+                val cameraProvider = cameraProviderFuture.get()
+                bindPreview(cameraProvider) // Call the function here
+            }, cameraExecutor)
+            // startCamera()
         } else {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_CAMERA_PERMISSIONS)
         }
@@ -97,7 +111,6 @@ class Camera : AppCompatActivity() {
             takePhoto()
         }
         outputDirectory = getOutputDirectory()
-        cameraExecutor = Executors.newSingleThreadExecutor()
 
 
         val carousel: ImageCarousel = findViewById(R.id.carousel)
@@ -154,6 +167,8 @@ class Camera : AppCompatActivity() {
 
             Log.e(TAG, "TODO: Open app to import and view $filepath RIGHT NOW!")
             editPicture(this, filepath)
+            postProcess = false
+            finishAfterTransition()
             postProcess = false
             finishAfterTransition()
         }
@@ -317,6 +332,24 @@ class Camera : AppCompatActivity() {
         }
     }
 
+    private fun bindPreview(cameraProvider : ProcessCameraProvider) {
+        val preview : Preview = Preview.Builder().build()
+        preview.setSurfaceProvider(binding.viewFinder.surfaceProvider)
+
+        val cameraSelector : CameraSelector = CameraSelector.Builder()
+            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+            .build()
+
+        val imageAnalysis = ImageAnalysis.Builder()
+            .setTargetResolution(android.util.Size(1024, 1024))
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
+
+        imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(this), YourImageAnalyzer())
+
+        cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis, preview)
+    }
+
     private fun startCamera() {
 
         cameraController = LifecycleCameraController(this)
@@ -378,6 +411,56 @@ class Camera : AppCompatActivity() {
         }
     }
 
+    private class YourImageAnalyzer : ImageAnalysis.Analyzer {
+        private val objectDetector: ObjectDetector
+
+        init {
+            // Multiple object detection in static images
+            val options = ObjectDetectorOptions.Builder()
+                .setDetectorMode(ObjectDetectorOptions.SINGLE_IMAGE_MODE)
+                .enableMultipleObjects()
+                .enableClassification()  // Optional
+                .build()
+            objectDetector = ObjectDetection.getClient(options)
+        }
+
+        @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
+        override fun analyze(imageProxy: ImageProxy) {
+            Log.w(TAG, "Called Analyze")
+            val mediaImage = imageProxy.image
+            if (mediaImage != null) {
+                val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+                objectDetector.process(image)
+                    .addOnSuccessListener { detectedObjects ->
+                        val labels = mutableListOf<String>()
+                        for (detectedObject in detectedObjects) {
+                            // val boundingBox = detectedObject.boundingBox
+                            // val trackingId = detectedObject.trackingId
+
+                            for (label in detectedObject.labels) {
+                                val text = label.text
+                                labels.add(text)
+                                val confidence = label.confidence
+                                if (PredefinedCategory.FOOD == text) {
+                                    Log.w(TAG, "Found Food with confidence $confidence")
+                                }
+                                val index = label.index
+                                if (PredefinedCategory.FOOD_INDEX == index) {
+                                    Log.w(TAG, "Found Food with confidence $confidence")
+                                    print("Found Food with confidence $confidence")
+                                }
+                            }
+                        }
+                        Log.w(TAG, "Found ${detectedObjects.size} objects of type: $labels")
+                        imageProxy.close()
+                    }
+                    .addOnFailureListener { e ->
+                        print("Failed to run ML: $e")
+                        imageProxy.close()
+                    }
+            }
+        }
+    }
 
     companion object {
         private const val TAG = "CameraXGFG"
