@@ -1,8 +1,4 @@
-import 'dart:io';
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:integration_test/integration_test.dart';
 import 'package:lock_screen_notification_example/main.dart';
 import 'package:patrol/patrol.dart';
 
@@ -15,7 +11,7 @@ void main() {
 
 const package="com.ourdatamine.lock_screen_notification_example";
 
-Future<void> testNotification(PatrolTester $) async {
+Future<void> testNotification(PatrolIntegrationTester $) async {
   await $.pumpWidgetAndSettle(
       await buildMainApp([])
   );
