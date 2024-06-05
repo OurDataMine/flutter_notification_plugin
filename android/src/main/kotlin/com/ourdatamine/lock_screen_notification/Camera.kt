@@ -182,7 +182,11 @@ class Camera : AppCompatActivity() {
 //        val jString = Json.encodeToString(status)
 //        Log.e(TAG, jString)
 
-        val jString = File(filesDir, "goal_display.json").readText(Charset.defaultCharset())
+        val file = File(filesDir, "goal_display.json")
+        if(!file.exists()) {
+            return
+        }
+        val jString = file.readText(Charset.defaultCharset())
         val obj = Json.decodeFromString<List<GoalStatus>>(jString)
 
         val analysis = findViewById<TextView>(R.id.analysis_text)
