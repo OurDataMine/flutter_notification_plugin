@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
@@ -16,7 +17,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -27,6 +30,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toFile
+import androidx.core.text.*
 import androidx.viewbinding.ViewBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -36,15 +40,20 @@ import com.ourdatamine.lock_screen_notification.LockScreenNotificationPlugin.Com
 import com.ourdatamine.lock_screen_notification.LockScreenNotificationPlugin.Companion.recordPictures
 import com.ourdatamine.lock_screen_notification.databinding.ActivityCameraBinding
 import com.ourdatamine.lock_screen_notification.databinding.FixedSizeLayoutBinding
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.imaginativeworld.whynotimagecarousel.ImageCarousel
 import org.imaginativeworld.whynotimagecarousel.listener.CarouselListener
 import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 import org.imaginativeworld.whynotimagecarousel.utils.setImage
 import java.io.File
+import java.nio.charset.Charset
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
 
 class Camera : AppCompatActivity() {
 
@@ -55,7 +64,7 @@ class Camera : AppCompatActivity() {
     private var location : Location? = null
     private var cameraController: LifecycleCameraController? = null
     private val list = LinkedList<CarouselItem>()
-    private var postProcess = true;
+    private var postProcess = true
 
     override fun onPause() {
         super.onPause()
@@ -143,15 +152,68 @@ class Camera : AppCompatActivity() {
             val item = list[carousel.currentPosition]
             val filepath = item.imageUrl ?: return@setOnClickListener
 
-            Log.e(TAG, "TODO: Open app to import and view ${filepath} RIGHT NOW!")
+            Log.e(TAG, "TODO: Open app to import and view $filepath RIGHT NOW!")
             editPicture(this, filepath)
-            postProcess = false;
-            finishAfterTransition();
+            postProcess = false
+            finishAfterTransition()
         }
 
+        loadJson()
     }
 
+    private fun loadJson() {
+//        val status = listOf(
+//            GoalStatus("Goal 1", listOf(
+//                ColorSetting("Red", 60*8),
+//                ColorSetting("Yellow", 60*12),
+//                ColorSetting("Green", 60*16),
+//            )),
+//            GoalStatus("Goal 2", listOf(
+//                ColorSetting("Red", 60*10),
+//                ColorSetting("Yellow", 60*14),
+//                ColorSetting("Green", 60*18),
+//            )),
+//            GoalStatus("Goal 3", listOf(
+//                ColorSetting("Green", 60*10),
+//                ColorSetting("Yellow", 60*14),
+//                ColorSetting("Red", 60*20),
+//            )),
+//        )
+//        val jString = Json.encodeToString(status)
+//        Log.e(TAG, jString)
 
+        val file = File(filesDir, "goal_display.json")
+        if(!file.exists()) {
+            return
+        }
+        val jString = file.readText(Charset.defaultCharset())
+        val obj = Json.decodeFromString<List<GoalStatus>>(jString)
+
+        val analysis = findViewById<TextView>(R.id.analysis_text)
+        val newText = buildSpannedString {
+            for (goal in obj) {
+                val color = getColor(goal)
+                bold { append(goal.name) }
+                color(color) { append(goal.name) }
+                italic { append(goal.name) }
+                append("\n")
+            }
+        }
+        analysis.text = newText
+    }
+
+    private fun getColor(goal : GoalStatus) : Int {
+        val now = LocalDateTime.now()
+        val minutesSince = now.hour * 60 + now.minute
+
+        for (setting in goal.settings) {
+            Log.e(TAG, "Comparing $minutesSince < ${setting.untilMinutes}")
+            if (minutesSince < setting.untilMinutes) {
+                return Color.parseColor(setting.color)
+            }
+        }
+        return Color.BLACK
+    }
 
     private fun isGranted(perm : String): Boolean {
         return ActivityCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_GRANTED
@@ -181,14 +243,14 @@ class Camera : AppCompatActivity() {
                     this.location = location
                 }
         }
-        else if (request) {
-            Log.e(LTAG, "location denied! Requesting...")
-            ActivityCompat.requestPermissions(
-                this,
-                LOCATION_PERMISSIONS,
-                REQUEST_CODE_LOCATION_PERMISSIONS
-            )
-        }
+//        else if (request) {
+//            Log.e(LTAG, "location denied! Requesting...")
+//            ActivityCompat.requestPermissions(
+//                this,
+//                LOCATION_PERMISSIONS,
+//                REQUEST_CODE_LOCATION_PERMISSIONS
+//            )
+//        }
     }
 
     private fun takePhoto() {

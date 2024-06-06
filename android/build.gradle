@@ -1,6 +1,3 @@
-group 'com.ourdatamine.lock_screen_notification'
-version '1.0-SNAPSHOT'
-
 buildscript {
     ext.kotlin_version = '1.7.10'
     repositories {
@@ -9,10 +6,18 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.2'
+        classpath 'com.android.tools.build:gradle:7.1.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
+
+plugins {
+    id 'org.jetbrains.kotlin.plugin.serialization' version "$kotlin_version"
+}
+
+group 'com.ourdatamine.lock_screen_notification'
+version '1.0-SNAPSHOT'
+
 
 allprojects {
     repositories {
@@ -23,13 +28,18 @@ allprojects {
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlinx-serialization'
 
 android {
-
-    namespace "com.ourdatamine.lock_screen_notification"
-    compileSdkVersion 33
+    if (project.android.hasProperty("namespace")) {
+        namespace "com.ourdatamine.lock_screen_notification"
+    }
+    compileSdk 33
 
     compileOptions {
+        // Flag to enable support for the new language APIs
+        coreLibraryDesugaringEnabled true
+
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
@@ -51,38 +61,50 @@ android {
         minSdkVersion 21
         multiDexEnabled = true
     }
-}
 
-dependencies {
+    dependencies {
+        coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 
-    //implementation files('/home/derrick/snap/flutter/common/flutter/bin/cache/artifacts/engine/android-x86/flutter.jar')
+        implementation 'androidx.core:core-ktx:1.7.0'
+        implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0'
 
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0'
+        implementation 'androidx.appcompat:appcompat:1.5.1'
+        implementation 'com.google.android.material:material:1.6.1'
+        implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+        implementation 'androidx.navigation:navigation-fragment-ktx:2.4.1'
+        implementation 'androidx.navigation:navigation-ui-ktx:2.4.1'
+        testImplementation 'junit:junit:4.13.2'
+        androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+        androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'com.google.android.material:material:1.6.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.4.1'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.4.1'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+        implementation platform('androidx.compose:compose-bom:2022.10.00')
+        implementation 'androidx.compose.ui:ui'
+        implementation 'androidx.compose.ui:ui-graphics'
+        implementation 'androidx.compose.ui:ui-tooling-preview'
+        implementation 'androidx.compose.material3:material3'
 
-    implementation platform('androidx.compose:compose-bom:2022.10.00')
-    implementation 'androidx.compose.ui:ui'
-    implementation 'androidx.compose.ui:ui-graphics'
-    implementation 'androidx.compose.ui:ui-tooling-preview'
-    implementation 'androidx.compose.material3:material3'
+        implementation 'org.imaginativeworld.whynotimagecarousel:whynotimagecarousel:2.1.0'
 
-    implementation 'org.imaginativeworld.whynotimagecarousel:whynotimagecarousel:2.1.0'
+        implementation "com.google.android.gms:play-services-location:21.0.1"
 
-    implementation "com.google.android.gms:play-services-location:21.0.1"
+        def camerax_version = "1.2.0"
+        implementation "androidx.camera:camera-core:$camerax_version"
+        implementation "androidx.camera:camera-camera2:$camerax_version"
+        implementation "androidx.camera:camera-lifecycle:$camerax_version"
+        implementation "androidx.camera:camera-view:$camerax_version"
 
-    def camerax_version = "1.2.0"
-    implementation "androidx.camera:camera-core:$camerax_version"
-    implementation "androidx.camera:camera-camera2:$camerax_version"
-    implementation "androidx.camera:camera-lifecycle:$camerax_version"
-    implementation "androidx.camera:camera-view:$camerax_version"
-//    implementation "androidx.camera:camera-extensions:$camerax_version"
+        implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0"
+    }
+
+    testOptions {
+        unitTests.all {
+            useJUnitPlatform()
+
+            testLogging {
+                events "passed", "skipped", "failed", "standardOut", "standardError"
+                outputs.upToDateWhen { false }
+                showStandardStreams = true
+            }
+        }
+    }
 }

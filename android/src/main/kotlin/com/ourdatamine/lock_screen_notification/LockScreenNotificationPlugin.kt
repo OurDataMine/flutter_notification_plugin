@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -64,7 +63,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
             "takePicture" -> {
                 _appContext?.also {
                     val intent1 = Intent(it, Camera::class.java)
-                    intent1.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    intent1.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     it.startActivity(intent1)
                 }
             }
@@ -104,7 +103,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
 
         private val smile_buttons =
             arrayOf(R.id.smile1, R.id.smile2, R.id.smile3, R.id.smile4, R.id.smile5)
-        val smile_emojis = arrayOf(
+        private val smile_emojis = arrayOf(
             R.string.Smile1,
             R.string.Smile2,
             R.string.Smile3,
@@ -116,7 +115,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
 
         private fun startEngine(context: Context, args: List<String> = listOf()) {
             if (FlutterEngineCache.getInstance()
-                    .contains("notifcation_engine") || instance?._engine != null
+                    .contains("notification_engine") || instance?._engine != null
             ) {
                 Log.d(TAG, "Engine is already initialised @ ${instance?._engine}")
                 return
@@ -195,7 +194,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
                 )
         }
 
-        fun createNotification(context: Context, update_text: String = "") {
+        fun createNotification(context: Context, updateText: String = "") {
             createNotificationChannel(context)
 //            val notificationView =
 //                RemoteViews(
@@ -203,7 +202,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
 //                    R.layout.notification_layout
 //                )
 //
-//            notificationView.setCharSequence(R.id.notifcationText, "setText", update_text)
+//            notificationView.setCharSequence(R.id.notificationText, "setText", update_text)
 
             val cameraIntent = createPI(context)
 
@@ -217,7 +216,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
                 .setContentIntent(cameraIntent)
                 .setSmallIcon(R.drawable.notification_icon)
                 .setContentTitle("Record Health Event")
-                .setContentText(update_text)
+                .setContentText(updateText)
                 .setContentInfo("Content Info")
                 .setAutoCancel(false)
                 .setLocalOnly(true)
@@ -235,7 +234,7 @@ class LockScreenNotificationPlugin : FlutterPlugin, MethodChannel.MethodCallHand
             with(NotificationManagerCompat.from(context)) {
                 notify(NOTIFICATION_ID, builder.build())
             }
-            Log.d("Notification", "Create Notification with text: $update_text")
+            Log.d("Notification", "Create Notification with text: $updateText")
         }
 
         fun areNotificationsEnabled(context: Context): Boolean {
