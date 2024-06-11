@@ -158,7 +158,11 @@ class Camera : AppCompatActivity() {
             finishAfterTransition()
         }
 
-        loadJson()
+        try {
+            loadJson()
+        } catch (_: Exception) {
+
+        }
     }
 
     private fun loadJson() {
