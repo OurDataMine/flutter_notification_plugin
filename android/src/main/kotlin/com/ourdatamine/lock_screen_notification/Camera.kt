@@ -160,8 +160,8 @@ class Camera : AppCompatActivity() {
 
         try {
             loadJson()
-        } catch (_: Exception) {
-
+        } catch (ex: Exception) {
+            Log.e(TAG, ex.toString())
         }
     }
 
