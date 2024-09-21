@@ -53,7 +53,10 @@ import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.analytics.logEvent
+import com.google.firebase.ktx.Firebase
 
 class Camera : AppCompatActivity() {
 
@@ -65,6 +68,7 @@ class Camera : AppCompatActivity() {
     private var cameraController: LifecycleCameraController? = null
     private val list = LinkedList<CarouselItem>()
     private var postProcess = true
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
 
     override fun onPause() {
         super.onPause()
@@ -77,6 +81,7 @@ class Camera : AppCompatActivity() {
         binding = ActivityCameraBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        firebaseAnalytics = Firebase.analytics
 
         getLocation()
 
@@ -127,6 +132,12 @@ class Camera : AppCompatActivity() {
 
         val delete = findViewById<Button>(R.id.delete_button)
         delete.setOnClickListener {
+            firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT) {
+                param(FirebaseAnalytics.Param.ITEM_ID, "2")
+                param(FirebaseAnalytics.Param.ITEM_NAME, "Delete Photo")
+                param(FirebaseAnalytics.Param.CONTENT_TYPE, "button")
+            }
+
             if(carousel.currentPosition < 0) {
                 return@setOnClickListener
             }
@@ -146,6 +157,12 @@ class Camera : AppCompatActivity() {
 
         val edit = findViewById<Button>(R.id.edit_button)
         edit.setOnClickListener {
+            firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT) {
+                param(FirebaseAnalytics.Param.ITEM_ID, "3")
+                param(FirebaseAnalytics.Param.ITEM_NAME, "Edit Photo")
+                param(FirebaseAnalytics.Param.CONTENT_TYPE, "button")
+            }
+
             if(carousel.currentPosition < 0) {
                 return@setOnClickListener
             }
