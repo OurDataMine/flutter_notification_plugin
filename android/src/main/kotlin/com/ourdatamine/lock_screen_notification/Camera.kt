@@ -99,8 +99,22 @@ class Camera : AppCompatActivity() {
         // set on click listener for the button of capture photo
         // it calls a method which is implemented below
         findViewById<View>(R.id.viewFinder).setOnClickListener {
+            firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT) {
+                param(FirebaseAnalytics.Param.ITEM_ID, "viewFinder")
+                param(FirebaseAnalytics.Param.ITEM_NAME, "Take Photo")
+                param(FirebaseAnalytics.Param.CONTENT_TYPE, "button")
+            }
             takePhoto()
         }
+        findViewById<View>(R.id.shutter_button).setOnClickListener {
+            firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT) {
+                param(FirebaseAnalytics.Param.ITEM_ID, "shutter_button")
+                param(FirebaseAnalytics.Param.ITEM_NAME, "Take Photo")
+                param(FirebaseAnalytics.Param.CONTENT_TYPE, "button")
+            }
+            takePhoto()
+        }
+
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
 
