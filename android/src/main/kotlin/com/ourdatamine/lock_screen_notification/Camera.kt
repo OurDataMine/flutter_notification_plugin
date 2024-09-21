@@ -197,26 +197,6 @@ class Camera : AppCompatActivity() {
     }
 
     private fun loadJson() {
-//        val status = listOf(
-//            GoalStatus("Goal 1", listOf(
-//                ColorSetting("Red", 60*8),
-//                ColorSetting("Yellow", 60*12),
-//                ColorSetting("Green", 60*16),
-//            )),
-//            GoalStatus("Goal 2", listOf(
-//                ColorSetting("Red", 60*10),
-//                ColorSetting("Yellow", 60*14),
-//                ColorSetting("Green", 60*18),
-//            )),
-//            GoalStatus("Goal 3", listOf(
-//                ColorSetting("Green", 60*10),
-//                ColorSetting("Yellow", 60*14),
-//                ColorSetting("Red", 60*20),
-//            )),
-//        )
-//        val jString = Json.encodeToString(status)
-//        Log.e(TAG, jString)
-
         val file = File(filesDir, "goal_display.json")
         if(!file.exists()) {
             return
@@ -228,10 +208,8 @@ class Camera : AppCompatActivity() {
         val newText = buildSpannedString {
             for (goal in obj) {
                 val color = getColor(goal)
-                bold { append(goal.name) }
-                color(color) { append(goal.name) }
-                italic { append(goal.name) }
-                append("\n")
+                color(color) { bold { append(goal.name) } }
+                append("\n\n")
             }
         }
         analysis.text = newText
